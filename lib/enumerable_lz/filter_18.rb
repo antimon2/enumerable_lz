@@ -41,6 +41,7 @@ module Enumerable
 
     #[override]
     def filter pattern=nil, &block
+      return super unless @init_block.nil?
       # clone.filter! pattern, &block
       patterns = @filter.nil? ? [] : @filter.clone
       if pattern.is_a? Array

@@ -49,6 +49,7 @@ module Enumerable
       else
         patterns<<(pattern || block)
       end
+      return Filter.new @org_enum, @init_block, patterns unless @init_block.nil?
       Filter.new @org_enum, patterns
     end
 

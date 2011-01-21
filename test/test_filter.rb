@@ -107,10 +107,11 @@ class FilterTest < Test::Unit::TestCase
 
   def test_filter_with_initproc_2
     range = 1..20
-    sum = 0
+    sum = 100
     init_pr = Proc.new{sum = 0}
     enum1 = range.filter_with_initproc(init_pr) {|n|(sum+=n)>100}
     enum2 = enum1.filter(&:odd?)
+    # assert_not_equal([1, 3, 5, 7, 9, 11, 13, 15, 17, 19], enum2.to_a)
     assert_equal([15, 17, 19], enum2.to_a)
   end
 

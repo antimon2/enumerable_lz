@@ -10,3 +10,9 @@ else
   require File.dirname(__FILE__)+'/enumerable_lz/filter_18'
   require File.dirname(__FILE__)+'/enumerable_lz/transform_18'
 end
+
+module Enumerable
+  module EnumerableLz
+    VERSION = "0.1.0"
+  end
+end
