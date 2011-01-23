@@ -2,7 +2,6 @@
 
 'enumerable_lz' provides filter and transformation methods in `Enumerable` module.
 Also it provides lazy equivalents of some methods in `Enumerable`.
-`Enumerable#filter` and `Enumerable#transform` methods 
 
 
 ## Fundamental Usage
@@ -50,14 +49,14 @@ For example (in Ruby 1.9.x):
 These expanded methods are inplemented with fundamental filter and transformation methods.
 
 
-== Supported Rubies
+## Supported Rubies
 
 * Ruby 1.9.x (testing 1.9.2-p0, 1.9.2 p-136)
 * Ruby 1.8.7 (testing 1.8.7-p330)
 * JRuby 1.5.x (testing 1.5.6)
 * MacRuby 0.8
 
-== Installation
+## Installation
 
     gem install enumerable_lz
 
@@ -66,9 +65,9 @@ or
     gem install antimon2-enumerable_lz
 
 
-== License
+## License
 
 The MIT License  
 Copyright (c) 2011 GOTOH Shunsuke (@antimon2)
 
-Please see LICENSE.txt for details.
+Please see [LICENSE.txt](LICENSE.txt) for details.
