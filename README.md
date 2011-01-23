@@ -60,10 +60,6 @@ These expanded methods are inplemented with fundamental filter and transformatio
 
     gem install enumerable_lz
 
-or
-
-    gem install antimon2-enumerable_lz
-
 
 ## License
 

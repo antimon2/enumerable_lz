@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.email = %q{antimon2.me@gmail.com}
   # s.extra_rdoc_files = ["README", "ChangeLog"]
   s.files = ["README.md", "LICENSE.txt", "ChangeLog", "Rakefile", "test/test_enumerable_ex.rb", "test/test_filter.rb", "test/test_transform.rb", "lib/enumerable_lz", "lib/enumerable_lz/enumerable_ex.rb", "lib/enumerable_lz/filter.rb", "lib/enumerable_lz/filter_18.rb", "lib/enumerable_lz/filter_mrb.rb", "lib/enumerable_lz/transform.rb", "lib/enumerable_lz/transform_18.rb", "lib/enumerable_lz/transform_mrb.rb", "lib/enumerable_lz.rb"]
-  s.homepage = %q{http://enumerable_lz.rubyforge.org}
+  s.homepage = %q{https://github.com/antimon2/enumerable_lz}
   # s.rdoc_options = ["--title", "enumerable_lz documentation", "--charset", "utf-8", "--opname", "index.html", "--line-numbers", "--main", "README", "--inline-source", "--exclude", "^(examples|extras)/"]
   s.require_paths = ["lib"]
   s.required_ruby_version = Gem::Requirement.new(">= 1.8.7")
