@@ -2,11 +2,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{enumerable_lz}
-  s.version = "0.1.0"
+  s.version = "0.1.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["antimon2"]
-  s.date = %q{2011-01-23}
+  s.date = %q{2011-02-23}
   s.description = %q{Add Enumerable#filter, Enumerable#transform and some equivalent methods on Enumerable with suffix '_lz'.}
   s.email = %q{antimon2.me@gmail.com}
   # s.extra_rdoc_files = ["README", "ChangeLog"]

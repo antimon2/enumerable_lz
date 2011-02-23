@@ -16,10 +16,15 @@ module Enumerable
       @init_block = init_block unless init_block.nil?
       super() do |y|
         @init_block.call unless @init_block.nil?
-        catch :do_break do
-          @org_enum.each do |*el|
-            y.yield *el if matches_filter? *el
+        the_enum = (@filter||[]).inject(@org_enum) do |r,f|
+          Enumerator.new do |iy|
+            r.each do |el|
+              iy.yield el if f.call(el)
+            end
           end
+        end
+        catch :do_break do
+          the_enum.each {|el| y.yield el}
         end
       end
       filter! the_filter if the_filter
@@ -28,9 +33,9 @@ module Enumerable
     def filter! pattern=nil, &block
       @filter||=[]
       if pattern.is_a? Array
-        @filter.push(*pattern)
+        pattern.each{|el| @filter << conv_proc(el)}
       else
-        @filter<<(pattern || block)
+        @filter << conv_proc(pattern || block)
       end
       self
     end
@@ -49,18 +54,14 @@ module Enumerable
     end
 
     private
-    def matches_filter? obj, *others
-      return true if @filter.nil?
-      args = [obj, *others]
-      @filter.all? do |filter|
-        case filter
-        when nil
-          true
-        when Proc
-          filter[*args]
-        else
-          filter===obj
-        end
+    def conv_proc pattern
+      case pattern
+      when nil
+        Proc.new{true}
+      when Proc
+        pattern
+      else
+        pattern.respond_to?(:to_proc) ? pattern.to_proc : Proc.new{|el|pattern===el}
       end
     end
   end
