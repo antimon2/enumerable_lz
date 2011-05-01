@@ -16,15 +16,13 @@ module Enumerable
       @init_block = init_block unless init_block.nil?
       super() do |y|
         @init_block.call unless @init_block.nil?
-        the_enum = (@filter||[]).inject(@org_enum) do |r,f|
-          Enumerator.new do |iy|
-            r.each do |el|
-              iy.yield el if f.call(el)
-            end
-          end
+        compiled_filter = (@filter||[Proc.new{true}]).inject do |r,f|
+          Proc.new{|el| r===el && f===el}
         end
         catch :do_break do
-          the_enum.each {|el| y.yield el}
+          @org_enum.each do |el|
+            y.yield el if compiled_filter===el
+          end
         end
       end
       filter! the_filter if the_filter
@@ -58,11 +56,15 @@ module Enumerable
       case pattern
       when nil
         Proc.new{true}
-      when Proc
-        pattern
-      else
-        pattern.respond_to?(:to_proc) ? pattern.to_proc : Proc.new{|el|pattern===el}
+      else  # Proc#=== is equal to Proc#call on Ruby1.9.x
+        pattern.respond_to?(:to_proc) ? pattern.to_proc : pattern
       end
     end
+  end
+end
+#against the Bug on JRuby <1.6.2
+if !(Proc.new{true}===true)
+  class Proc
+    alias :=== :call
   end
 end

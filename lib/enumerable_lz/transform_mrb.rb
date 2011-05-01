@@ -11,8 +11,9 @@ module Enumerable
       super Class.new {
         define_method :each do
           return outer unless block_given?
-          obj.each do |*el|
-            yield outer.__send__(:apply_transform, *el)
+          the_transformer = outer.__send__(:compile_transformer)
+          obj.each do |el|
+            yield the_transformer[el]
           end
         end
       }.new
@@ -36,12 +37,11 @@ module Enumerable
     end
 
     private
-    def apply_transform *args
-      result = args
-      @transformer.each do |transformer|
-        result = transformer[*result] unless transformer.nil?
-      end unless @transformer.nil?
-      result
+    def compile_transformer
+      return Proc.new{|a|a} if @transformer.nil? || @transformer.size==0
+      @transformer.inject do |r,f|
+        Proc.new{|el|f[r[el]]}
+      end
     end
   end
 end

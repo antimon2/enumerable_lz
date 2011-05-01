@@ -20,11 +20,13 @@ module Enumerable
     def each &block
       return self unless block_given?
       @init_block.call unless @init_block.nil?
-      the_enum = (@filter||[]).inject(@org_enum) do |r,f|
-        CompliedFilter.new r, f
+      compiled_filter = (@filter||[Proc.new{true}]).inject do |r,f|
+        Proc.new{|el| r[el] && f[el]}
       end
       catch :do_break do
-        the_enum.each{|el| block.call(el)}
+        @org_enum.each do |el|
+          block.call(el) if compiled_filter[el]
+        end
       end
       self
     end
@@ -61,19 +63,6 @@ module Enumerable
         pattern
       else
         pattern.respond_to?(:to_proc) ? pattern.to_proc : Proc.new{|el|pattern===el}
-      end
-    end
-
-    class CompliedFilter
-      def initialize org_enum, filter
-        @org_enum = org_enum
-        @filter = filter
-      end
-
-      def each &block
-        @org_enum.each do |el|
-          block.call(el) if @filter.call(el)
-        end
       end
     end
   end

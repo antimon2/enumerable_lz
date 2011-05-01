@@ -12,8 +12,9 @@ module Enumerable
 
     def each &block
       return self unless block_given?
-      @org_enum.each do |*el|
-        block.call apply_transform(*el)
+      the_transformer = compile_transformer
+      @org_enum.each do |el|
+        block.call the_transformer[el]
       end
       self
     end
@@ -35,12 +36,11 @@ module Enumerable
     end
 
     private
-    def apply_transform *args
-      result = args
-      @transformer.each do |transformer|
-        result = transformer[*result] unless transformer.nil?
-      end unless @transformer.nil?
-      result
+    def compile_transformer
+      return Proc.new{|a|a} if @transformer.nil? || @transformer.size==0
+      @transformer.inject do |r,f|
+        Proc.new{|el|f[r[el]]}
+      end
     end
   end
 end

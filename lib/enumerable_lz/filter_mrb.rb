@@ -19,9 +19,10 @@ module Enumerable
         define_method :each do
           return outer unless block_given?
           init_block.call unless init_block.nil?
+          compiled_filter = outer.__send__(:compile_filter)
           catch :do_break do
-            obj.each do |*el|
-              yield *el if outer.__send__(:matches_filter?, *el)
+            obj.each do |el|
+              yield el if compiled_filter===el
             end
           end
           outer
@@ -33,9 +34,9 @@ module Enumerable
     def filter! pattern=nil, &block
       @filter||=[]
       if pattern.is_a? Array
-        @filter.push(*pattern)
+        pattern.each{|el| @filter << conv_proc(el)}
       else
-        @filter<<(pattern || block)
+        @filter<<conv_proc(pattern || block)
       end
       self
     end
@@ -54,18 +55,17 @@ module Enumerable
     end
 
     private
-    def matches_filter? obj, *others
-      return true if @filter.nil?
-      args = [obj, *others]
-      @filter.all? do |filter|
-        case filter
-        when nil
-          true
-        when Proc
-          filter[*args]
-        else
-          filter===obj
-        end
+    def conv_proc pattern
+      case pattern
+      when nil
+        Proc.new{true}
+      else  # Proc#=== is equal to Proc#call on Ruby1.9.x
+        pattern.respond_to?(:to_proc) ? pattern.to_proc : pattern
+      end
+    end
+    def compile_filter
+      @filter.inject do |r,f|
+        Proc.new{|el| r===el && f===el}
       end
     end
   end

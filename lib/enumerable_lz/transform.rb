@@ -8,8 +8,9 @@ module Enumerable
     def initialize obj, &transformer
       @org_enum = obj
       super() do |y|
-        obj.each do |*el|
-          y << apply_transform(*el)
+        the_transformer = compile_transformer
+        obj.each do |el|
+          y << the_transformer[el]
         end
       end
       transform! &transformer if block_given?
@@ -31,19 +32,12 @@ module Enumerable
       cp.transform! &block
     end
 
-#    def clone
-#      cp = super
-#      cp.instance_eval { @transformer = @transformer.nil? ? [] : @transformer.clone }
-#      cp
-#    end
-
     private
-    def apply_transform *args
-      result = args
-      @transformer.each do |transformer|
-        result = transformer[*result] unless transformer.nil?
-      end unless @transformer.nil?
-      result
+    def compile_transformer
+      return Proc.new{|a|a} if @transformer.nil? || @transformer.size==0
+      @transformer.inject do |r,f|
+        Proc.new{|el|f[r[el]]}
+      end
     end
   end
 end
