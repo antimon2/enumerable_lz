@@ -51,10 +51,10 @@ These expanded methods are inplemented with fundamental filter and transformatio
 
 ## Supported Rubies
 
-* Ruby 1.9.x (testing 1.9.2-p0, 1.9.2 p-136)
-* Ruby 1.8.7 (testing 1.8.7-p330)
-* JRuby 1.5.x (testing 1.5.6)
-* MacRuby 0.8
+* Ruby 1.9.x (testing 1.9.2 p-180)
+* Ruby 1.8.7 (testing 1.8.7-p334)
+* JRuby (testing 1.5.6, 1.6.0)
+* MacRuby (testing 0.9)
 
 ## Installation
 

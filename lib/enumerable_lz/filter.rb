@@ -16,9 +16,13 @@ module Enumerable
       @init_block = init_block unless init_block.nil?
       super() do |y|
         @init_block.call unless @init_block.nil?
-        compiled_filter = (@filter||[Proc.new{true}]).inject do |r,f|
-          Proc.new{|el| r===el && f===el}
-        end
+        compiled_filter = @filter.nil? ? Proc.new{true} : lambda{|f|
+          break f[0] if f.size==1
+          codes = f.size.times.map do |idx|
+            "f[#{idx}]===el"
+          end
+          eval "Proc.new{|el|"+codes.join(" && ")+"}"
+        }.call(@filter)
         catch :do_break do
           @org_enum.each do |el|
             y.yield el if compiled_filter===el

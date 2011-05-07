@@ -38,9 +38,13 @@ module Enumerable
     private
     def compile_transformer
       return Proc.new{|a|a} if @transformer.nil? || @transformer.size==0
-      @transformer.inject do |r,f|
-        Proc.new{|el|f[r[el]]}
-      end
+      return @transformer[0] if @transformer.size==1
+      lambda{|t|
+        codes = t.size.times.inject "el" do |r,idx|
+          "t[#{idx}][#{r}]"
+        end
+        eval "Proc.new{|el|"+codes+"}"
+      }.call(@transformer)
     end
   end
 end

@@ -42,6 +42,14 @@ module Enumerable
       @transformer.inject do |r,f|
         Proc.new{|el|f[r[el]]}
       end
+      ### MacRuby has a Problem of Nesting Proc Definition
+      # return @transformer[0] if @transformer.size==1
+      # lambda{|t|
+      #   codes = t.size.times.inject "el" do |r,idx|
+      #     "t[#{idx}][#{r}]"
+      #   end
+      #   eval "Proc.new{|el|"+codes+"}"
+      # }.call(@transformer)
     end
   end
 end

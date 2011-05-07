@@ -64,9 +64,14 @@ module Enumerable
       end
     end
     def compile_filter
-      @filter.inject do |r,f|
-        Proc.new{|el| r===el && f===el}
-      end
+      return Proc.new{true} if @filter.nil?
+      return @filter[0] if @filter.size==1
+      lambda{|f|
+        codes = f.size.times.map do |idx|
+          "f[#{idx}]===el"
+        end
+        eval "Proc.new{|el|"+codes.join(" && ")+"}"
+      }.call(@filter)
     end
   end
 end
