@@ -1,24 +1,26 @@
 # for MacRuby
+
 module Enumerable
   def filter pattern = nil, &block
-    Filter.new self, pattern||block
+    Enumerator::Filter.new self, pattern||block
   end
 
+  # @deprecated Use filter.with_initializer instead of this method
   def filter_with_initproc init_proc, pattern = nil, &block
-    Filter.new self, init_proc, pattern||block
+    filter.with_initializer init_proc, pattern = nil, &block
   end
+end
 
+class Enumerator
   class Filter < Enumerator
-    def initialize obj, *args
-      the_filter = args.shift
-      init_block, the_filter = [the_filter, args.shift] unless args.empty?
+    TrueProc = Proc.new{true}
+
+    def initialize obj, the_filter = nil
       @org_enum = obj
-      @init_block = init_block unless init_block.nil?
       outer = self
       super Class.new {
         define_method :each do
           return outer unless block_given?
-          init_block.call unless init_block.nil?
           compiled_filter = outer.__send__(:compile_filter)
           catch :do_break do
             obj.each do |el|
@@ -50,8 +52,21 @@ module Enumerable
       else
         patterns<<(pattern || block)
       end
-      return Filter.new @org_enum, @init_block, patterns unless @init_block.nil?
       Filter.new @org_enum, patterns
+    end
+
+    def with_initializer init_proc, pattern = nil, &block
+      src_enum = @filter.nil? ? @org_enum : self
+      FilterWithInitializer.new src_enum, init_proc, pattern||block
+    end
+
+    #[override]
+    def with_index offset=0, &block
+      raise ArgumentError, "tried to call filter.with_index without a block" unless block_given?
+      i = offset - 1
+      patterns = @filter.nil? ? [] : @filter.clone
+      patterns << Proc.new{|el| block.call(el, i += 1)}
+      FilterWithInitializer.new @org_enum, Proc.new{i = offset - 1}, patterns
     end
 
     private
@@ -72,6 +87,25 @@ module Enumerable
         end
         eval "Proc.new{|el|"+codes.join(" && ")+"}"
       }.call(@filter)
+    end
+  end
+
+  # private
+  class FilterWithInitializer < Filter
+    def initialize obj, init_block, the_filter = nil
+      super obj, the_filter
+      @initializer = init_block
+    end
+
+    def each &block
+      return self unless block_given?
+      @initializer.call
+      super &block
+    end
+
+    #[override]
+    def filter pattern=nil, &block
+      Filter.new self, pattern||block
     end
   end
 end

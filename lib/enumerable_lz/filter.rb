@@ -1,21 +1,21 @@
 # for Ruby1.9.x except for MacRuby
+
 module Enumerable
   def filter pattern = nil, &block
-    Filter.new self, pattern||block
+    Enumerator::Filter.new self, pattern||block
   end
 
+  # @deprecated Use filter.with_initializer instead of this method
   def filter_with_initproc init_proc, pattern = nil, &block
-    Filter.new self, init_proc, pattern||block
+    filter.with_initializer init_proc, pattern = nil, &block
   end
+end
 
+class Enumerator
   class Filter < Enumerator
-    def initialize obj, *args
-      the_filter = args.shift
-      init_block, the_filter = [the_filter, args.shift] unless args.empty?
+    def initialize obj, the_filter=nil
       @org_enum = obj
-      @init_block = init_block unless init_block.nil?
       super() do |y|
-        @init_block.call unless @init_block.nil?
         compiled_filter = @filter.nil? ? Proc.new{true} : lambda{|f|
           break f[0] if f.size==1
           codes = f.size.times.map do |idx|
@@ -44,7 +44,6 @@ module Enumerable
 
     #[override]
     def filter pattern=nil, &block
-      return super unless @init_block.nil?
       # clone.filter! pattern, &block
       patterns = @filter.nil? ? [] : @filter.clone
       if pattern.is_a? Array
@@ -55,6 +54,20 @@ module Enumerable
       Filter.new @org_enum, patterns
     end
 
+    def with_initializer init_proc, pattern = nil, &block
+      src_enum = @filter.nil? ? @org_enum : self
+      FilterWithInitializer.new src_enum, init_proc, pattern||block
+    end
+
+    #[override]
+    def with_index offset=0, &block
+      raise ArgumentError, "tried to call filter.with_index without a block" unless block_given?
+      i = offset - 1
+      with_initializer(Proc.new{i = offset - 1}) do |el|
+        block.call(el, i += 1)
+      end
+    end
+
     private
     def conv_proc pattern
       case pattern
@@ -63,6 +76,25 @@ module Enumerable
       else  # Proc#=== is equal to Proc#call on Ruby1.9.x
         pattern.respond_to?(:to_proc) ? pattern.to_proc : pattern
       end
+    end
+  end
+
+  # private
+  class FilterWithInitializer < Filter
+    def initialize obj, init_block, the_filter = nil
+      super obj, the_filter
+      @initializer = init_block
+    end
+
+    def each &block
+      return self unless block_given?
+      @initializer.call
+      super &block
+    end
+
+    #[override]
+    def filter pattern=nil, &block
+      Filter.new self, pattern||block
     end
   end
 end
