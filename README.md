@@ -9,16 +9,31 @@ Also it provides lazy equivalents of some methods in `Enumerable`.
 When require 'enumerable_lz', these lazy methods are provided:
 
 * `Enumerable#filter`
-* `Enumerable#filter_with_initproc`
 * `Enumerable#transform`
 
-For example (in Ruby 1.9.x):
+And some method-chains are provided:
+
+* `Enumerable#filter.with_index`
+* `Enumerable#filter.with_initializer`
+* `Enumerable#transform.with_index`
+
+For example (in Ruby 1.9.x or greater):
 
     require 'enumerable_lz'
     require 'prime'
-    
+
     (1..Float::INFINITY).transform{|n|n**2+1}.filter{|m|m.prime?}.take(100)
     # => [2, 5, ... , 682277, 739601] for a few msec.
+
+    Prime.filter.with_index{|q,i|i.odd?}.take(10)
+    # => [3, 7, 13, 19, 29, 37, 43, 53, 61, 71]
+
+    Prime.transform.with_index{|q,i|[q,i]}.take(10)
+    # => [[2, 0], [3, 1], [5, 2], [7, 3], [11, 4], [13, 5], [17, 6], [19, 7], [23, 8], [29, 9]]
+
+    # especially, when calling transform.with_index without a block
+    Prime.transform.with_index.take(10)
+    # => [[2, 0], [3, 1], [5, 2], [7, 3], [11, 4], [13, 5], [17, 6], [19, 7], [23, 8], [29, 9]]
 
 
 ## Expanded Usage
@@ -37,7 +52,7 @@ When require 'enumerable_lz/enumerable_ex', some lazy methods equivalents to ori
 * `Enumerable#take_while_lz`
 
 
-For example (in Ruby 1.9.x):
+For example (in Ruby 1.9.x or greater):
 
     require 'enumerable_lz'
     require 'enumerable_lz/enumerable_ex'
@@ -51,10 +66,12 @@ These expanded methods are inplemented with fundamental filter and transformatio
 
 ## Supported Rubies
 
-* Ruby 1.9.x (testing 1.9.2 p-180)
-* Ruby 1.8.7 (testing 1.8.7-p334)
-* JRuby (testing 1.5.6, 1.6.0)
-* MacRuby (testing 0.9)
+* Ruby 2.1.0 (testing 2.1.0-p0)
+* Ruby 2.0.0 (testing 2.0.0-p247)
+* Ruby 1.9.x (testing 1.9.3-p448)
+* Ruby 1.8.7 (testing 1.8.7-p358)
+* JRuby (testing 1.7.2)
+* MacRuby (testing 0.12)
 
 ## Installation
 
@@ -64,6 +81,6 @@ These expanded methods are inplemented with fundamental filter and transformatio
 ## License
 
 The MIT License  
-Copyright (c) 2011 GOTOH Shunsuke (@antimon2)
+Copyright (c) 2011, 2014 GOTOH Shunsuke (@antimon2)
 
 Please see [LICENSE.txt](LICENSE.txt) for details.
