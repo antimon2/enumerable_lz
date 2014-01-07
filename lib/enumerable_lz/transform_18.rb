@@ -1,9 +1,5 @@
 # for Ruby1.8.7
 module Enumerable
-  def transform &block
-    Enumerator::Transform.new self, &block
-  end
-
   class Enumerator
     class Transform < Enumerator
       def initialize obj, &transformer

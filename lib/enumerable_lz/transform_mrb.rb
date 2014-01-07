@@ -1,10 +1,4 @@
 # for MacRuby
-module Enumerable
-  def transform &block
-    Enumerator::Transform.new self, &block
-  end
-end
-
 class Enumerator
   class Transform < Enumerator
     def initialize obj, &transformer

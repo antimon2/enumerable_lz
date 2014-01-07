@@ -1,12 +1,11 @@
-# for Ruby1.9.x except for MacRuby
-module Enumerable
-  def transform &block
-    Enumerator::Transform.new self, &block
-  end
-end
+# -- for Ruby1.9.x except for MacRuby
 
+# add [Filter] and [Transform] classes.
 class Enumerator
+  # Lazy Transform Enumerator
   class Transform < Enumerator
+    # @param [Enumerable] obj an Enumerable.
+    # @yield transform block.
     def initialize obj, &transformer
       @org_enum = obj
       super() do |y|
@@ -18,13 +17,19 @@ class Enumerator
       transform! &transformer if block_given?
     end
 
+    # Apply another transformer block and return self. (bang method of transform)
+    # @yield [el] transform block.
+    # @return [Transform] self
     def transform! &block
       @transformer||=[]
       @transformer << block if block_given?
       self
     end
 
-    #[override]
+    # [override] for performance
+    # @yield [el] transform block.
+    # @see Enumerable#transform Enumerable#transform
+    # @return [Transform]
     def transform &block
       # clone.transform! &block
       cp = Transform.new @org_enum
@@ -34,7 +39,16 @@ class Enumerator
       cp.transform! &block
     end
 
-    #[override]
+    # @yield [el, i] 
+    # @overload with_index(offset=0, &block)
+    #   @param [Numeric] offset offset.
+    #   @yield [el, i] 
+    #   @return [Transform]
+    # @overload with_index(offset=0)
+    #   @note same as with_index(offset) {|el, i| [el, i]}
+    #   @param [Numeric] offset offset.
+    #   @return [Transform]
+    # @return [Transform]
     def with_index offset=0, &block
       src_enum = @transformer.nil? || @transformer.size.zero? ? @org_enum : self
       block ||= Proc.new{|el, i|[el, i]}
@@ -54,7 +68,7 @@ class Enumerator
     end
   end
 
-  # private
+  # @api private
   class TransformWithIndex < Transform
     def initialize obj, offset = 0, &transformer
       @org_enum = obj
@@ -71,10 +85,12 @@ class Enumerator
       end
     end
 
-    #[override]
+    # @see Enumerable#filter Enumerable#filter
+    # @return [Transform]
     def transform &block
       Transform.new self, &block
     end
     alias :transform! :transform
   end
+  private_constant :TransformWithIndex if self.respond_to? :private_constant
 end

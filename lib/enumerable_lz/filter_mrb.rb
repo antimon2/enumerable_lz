@@ -1,16 +1,5 @@
 # for MacRuby
 
-module Enumerable
-  def filter pattern = nil, &block
-    Enumerator::Filter.new self, pattern||block
-  end
-
-  # @deprecated Use filter.with_initializer instead of this method
-  def filter_with_initproc init_proc, pattern = nil, &block
-    filter.with_initializer init_proc, pattern = nil, &block
-  end
-end
-
 class Enumerator
   class Filter < Enumerator
     TrueProc = Proc.new{true}

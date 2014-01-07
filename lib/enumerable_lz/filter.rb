@@ -1,18 +1,11 @@
-# for Ruby1.9.x except for MacRuby
+# -- for Ruby1.9.x except for MacRuby
 
-module Enumerable
-  def filter pattern = nil, &block
-    Enumerator::Filter.new self, pattern||block
-  end
-
-  # @deprecated Use filter.with_initializer instead of this method
-  def filter_with_initproc init_proc, pattern = nil, &block
-    filter.with_initializer init_proc, pattern = nil, &block
-  end
-end
-
+# add [Filter] and [Transform] classes.
 class Enumerator
+  # Lazy Filterring Enumerator
   class Filter < Enumerator
+    # @param [Enumerable] obj an Enumerable.
+    # @param [#===] the_filter filterring pattern or proc.
     def initialize obj, the_filter=nil
       @org_enum = obj
       super() do |y|
@@ -32,6 +25,9 @@ class Enumerator
       filter! the_filter if the_filter
     end
 
+    # Apply filter pattern/block and return self. (bang method of filter)
+    # @yield [el]
+    # @return [Filter] self
     def filter! pattern=nil, &block
       @filter||=[]
       if pattern.is_a? Array
@@ -42,7 +38,14 @@ class Enumerator
       self
     end
 
-    #[override]
+    # [override] for performance
+    # @yield [el]
+    # @overload filter(&block)
+    #   @yield [el]
+    # @overload filter(pattern)
+    #   @param [#===] pattern
+    # @see Enumerable#filter Enumerable#filter
+    # @return [Filter]
     def filter pattern=nil, &block
       # clone.filter! pattern, &block
       patterns = @filter.nil? ? [] : @filter.clone
@@ -54,12 +57,25 @@ class Enumerator
       Filter.new @org_enum, patterns
     end
 
+    # @overload with_initializer(init_proc, &block)
+    #   filter by block with initializer proc.
+    #   @param [#call] init_proc initializer proc. (uses .call method)
+    #   @yield filterring block.
+    #   @return [Filter]
+    # @overload with_initializer(init_proc, pattern)
+    #   filter by pattern with initializer proc.
+    #   @param [#call] init_proc initializer proc. (uses .call method)
+    #   @param [#===] pattern filterring pattern. (uses === method)
+    #   @return [Filter]
+    # @return [Filter]
     def with_initializer init_proc, pattern = nil, &block
       src_enum = @filter.nil? ? @org_enum : self
       FilterWithInitializer.new src_enum, init_proc, pattern||block
     end
 
-    #[override]
+    # @param [Numeric] offset offset.
+    # @yield [el, i] 
+    # @return [Filter]
     def with_index offset=0, &block
       raise ArgumentError, "tried to call filter.with_index without a block" unless block_given?
       i = offset - 1
@@ -79,7 +95,7 @@ class Enumerator
     end
   end
 
-  # private
+  # @api private
   class FilterWithInitializer < Filter
     def initialize obj, init_block, the_filter = nil
       super obj, the_filter
@@ -92,14 +108,17 @@ class Enumerator
       super &block
     end
 
-    #[override]
+    # @see Enumerable#filter Enumerable#filter
+    # @return [Filter]
     def filter pattern=nil, &block
       Filter.new self, pattern||block
     end
   end
+  private_constant :FilterWithInitializer if self.respond_to? :private_constant
 end
-#against the Bug on JRuby <1.6.2
+# against the Bug on JRuby < 1.6.2
 if !(Proc.new{true}===true)
+  # @private
   class Proc
     alias :=== :call
   end
