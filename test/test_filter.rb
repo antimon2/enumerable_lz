@@ -3,15 +3,17 @@ require 'enumerable_lz'
 
 class FilterTest < Test::Unit::TestCase
   def test_instance
-    enum = Enumerable::Filter.new []
+    filter_class = RUBY_VERSION < "1.9.0" ? Enumerable::Enumerator::Filter : Enumerator::Filter
+    enum = filter_class.new []
     assert_not_nil(enum)
     assert_kind_of(Enumerable, enum)
   end
 
   def test_filter_array
+    filter_class = RUBY_VERSION < "1.9.0" ? Enumerable::Enumerator::Filter : Enumerator::Filter
     array = %w[Yes I have a number]
     enum = array.filter{|letters|letters.size > 1}
-    assert_instance_of(Enumerable::Filter, enum)
+    assert_instance_of(filter_class, enum)
     assert_equal(%w[Yes have number], enum.to_a)
   end
 
@@ -85,14 +87,15 @@ class FilterTest < Test::Unit::TestCase
     assert_same(enum1, enum2)
   end
 
-  def test_init_block
-    range = -10..10
-    cnt = 0
-    init_pr = Proc.new{cnt = 0}
-    filter_pr = Proc.new{(cnt+=1)<=10}
-    enum = Enumerable::Filter.new range, init_pr, filter_pr
-    assert_equal([-10, -9, -8, -7, -6, -5, -4, -3, -2, -1], enum.to_a)
-  end
+  # def test_init_block
+  #   range = -10..10
+  #   cnt = 0
+  #   init_pr = Proc.new{cnt = 0}
+  #   filter_pr = Proc.new{(cnt+=1)<=10}
+  #   # enum = Enumerator::FilterWithInitializer.new range, init_pr, filter_pr
+  #   enum = Enumerator::FilterWithInitializer.new range, init_pr, filter_pr
+  #   assert_equal([-10, -9, -8, -7, -6, -5, -4, -3, -2, -1], enum.to_a)
+  # end
 
   def test_filter_with_initproc_1
     range = -10..10
@@ -121,5 +124,23 @@ class FilterTest < Test::Unit::TestCase
     init_pr = Proc.new{sum = 0}
     enum = range.filter_with_initproc(init_pr) {|n|throw :do_break if (sum+=n)>100;true}
     assert_equal([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], enum.to_a)
+  end
+
+  def test_filetr_with_index
+    a = 0
+    b = (1..10).filter.with_index{|n,i|a=n;i.even?}.first
+    assert_equal([1, 1], [a, b])
+  end
+
+  def test_filetr_with_index_2
+    a = 0
+    b = (1..10).filter.with_index(1){|n,i|a=n;i.even?}.first
+    assert_equal([2, 2], [a, b])
+  end
+
+  def test_filetr_with_index_no_block
+    assert_raise(ArgumentError) do
+      (1..10).filter.with_index(2).take(2)
+    end
   end
 end
