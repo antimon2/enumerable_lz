@@ -14,7 +14,7 @@
 
 * Improve performance much more
 
-== 0.1.5 / 2014-01-07
+== 0.1.5 / 2014-01-08
 
 * Add `filter.with_index` and `transform.with_index` feature
 * Add `filter.with_initializer` feature (and obsolete `filter_with_initproc` method)
